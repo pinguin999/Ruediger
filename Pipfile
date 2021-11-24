@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+smbus2 = "*"
+"rpi.gpio" = "*"
+sht-sensor = "*"
+
+[dev-packages]
+mypy = "*"
+flake8 = "*"
+autopep8 = "*"
+
+[requires]
+python_version = "3.8"
