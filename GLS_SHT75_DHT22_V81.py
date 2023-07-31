@@ -8,7 +8,7 @@ import math
 # import vcgencmd
 import lcddriver  # Sainsmart LCD 4x20
 import RPi.GPIO as GPIO  # Import GPIO library
-from sht_sensor import Sht
+from sht_sensor import Sht, ShtCommFailure, ShtCRCCheckError
 from time import sleep
 
 GPIO.setmode(GPIO.BOARD)  # Use board pin numbering
@@ -83,22 +83,21 @@ while True:
                 Ti = sht1.read_t()
                 rFo = sht2.read_rh()
                 To = sht2.read_t()
-            except (Sht.ShtCommFailure) as err:
+
+                # bei Nicht-Zahl-Ergebnis (text statt float) erneut auslesen lassen
+                if isinstance(Ti, float) and isinstance(rFi, float) and isinstance(To, float) and isinstance(rFo, float):
+                    break
+                else:
+                    # bei fehlerhaften Messwerten nach kl. Pause erneut auslesen lassen
+                    print("Fehlerhafter Datensatz (keine Zahl), erneutes Auslesen")
+                    sleep(10)
+
+            except (ShtCommFailure) as err:
                 print("Fehler: {0}".format(err))
                 sleep(10)
-            except (Sht.ShtCRCCheckError) as err:
+            except (ShtCRCCheckError) as err:
                 print("Fehler: {0}".format(err))
                 sleep(10)
-
-            # bei Nicht-Zahl-Ergebnis (text statt float) erneut auslesen lassen
-
-            if isinstance(Ti, float) and isinstance(rFi, float) and isinstance(To, float) and isinstance(rFo, float):
-                break
-            else:
-                print("Fehlerhafter Datensatz (keine Zahl), erneutes Auslesen")
-                sleep(10)
-
-        # bei fehlerhaften Messwerten nach kl. Pause erneut auslesen lassen
 
         if (-20.0 < To < 50.0 and -10.0 < Ti < 50.0 and 0.0 < rFi < 99.99 and 0.0 < rFo < 99.99):  # neu V71: 99.99
             break
